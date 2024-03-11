@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -19,7 +20,7 @@ public class User extends BaseEntity{
     private int age;
 
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_friends",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "friend_id"))
@@ -58,5 +59,21 @@ public class User extends BaseEntity{
 
     public void setFriends(Set<User> friends) {
         this.friends = friends;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return  Objects.equals(firstName, user.firstName)
+                && Objects.equals(lastName, user.lastName) &&
+                Objects.equals(getId(),user.getId())  &&
+                age == user.age;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, age, friends);
     }
 }

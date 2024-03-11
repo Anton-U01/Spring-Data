@@ -1,6 +1,10 @@
 package bg.softuni._productshop.services.impl;
 
+import bg.softuni._productshop.data.dtos.CategoryDto;
+import bg.softuni._productshop.data.dtos.ProductImportDto;
 import bg.softuni._productshop.data.dtos.UserImportDto;
+import bg.softuni._productshop.data.models.Category;
+import bg.softuni._productshop.data.models.Product;
 import bg.softuni._productshop.data.models.User;
 import bg.softuni._productshop.data.repositories.CategoryRepository;
 import bg.softuni._productshop.data.repositories.ProductRepository;
@@ -15,10 +19,14 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static bg.softuni._productshop.constants.Paths.*;
 
 @Service
 public class SeedServiceImpl implements SeedService {
@@ -28,8 +36,6 @@ public class SeedServiceImpl implements SeedService {
     private final ProductRepository productRepository;
     private final Gson gson;
     private final ModelMapper mapper;
-
-    private final Path USERS_PATH = Path.of("src","main","resources","files","users.json");
 
 
     public SeedServiceImpl(UserRepository userRepository, CategoryRepository categoryRepository, ProductRepository productRepository, Gson gson, ModelMapper mapper) {
@@ -51,12 +57,64 @@ public class SeedServiceImpl implements SeedService {
     }
 
     @Override
-    public void seedProducts() {
+    public void seedProducts() throws FileNotFoundException {
+        final FileReader fileReader = new FileReader(PRODUCTS_PATH.toFile());
+        ProductImportDto[] productImportDtos = this.gson.fromJson(fileReader,ProductImportDto[].class);
+        List<Product> products = Arrays.stream(productImportDtos)
+                .map(dto -> mapper.map(dto, Product.class))
+                .map(this::setSeller)
+                .map(this::setBuyer)
+                .map(this::setCategory)
+                .toList();
+        this.productRepository.saveAllAndFlush(products);
+    }
 
+
+    @Override
+    public void seedCategories() throws FileNotFoundException {
+        final FileReader fileReader = new FileReader(CATEGORY_PATH.toFile());
+        CategoryDto[] categoryDtos = this.gson.fromJson(fileReader,CategoryDto[].class);
+        List<Category> categories = Arrays.stream(categoryDtos)
+                .map(dto -> mapper.map(dto,Category.class))
+                .toList();
+        this.categoryRepository.saveAllAndFlush(categories);
     }
 
     @Override
-    public void seedCategories() {
+    public void seedAll() throws FileNotFoundException {
+        seedUsers();
+        seedCategories();
+        seedProducts();
+    }
 
+    private Product setBuyer(Product product) {
+        if(product.getPrice().compareTo(BigDecimal.valueOf(640)) > 0){
+            if(this.userRepository.getRandomUser().isPresent()){
+                User buyer = userRepository.getRandomUser().get();
+                while (buyer.equals(product.getSeller())){
+                    buyer = userRepository.getRandomUser().get();
+                }
+
+                product.setBuyer(buyer);
+            }
+        }
+
+        return product;
+    }
+
+    private Product setCategory(Product product) {
+        if(categoryRepository.getRandomCategory().isPresent()){
+            Category category = categoryRepository.getRandomCategory().get();
+            product.setCategories(Set.of(category));
+        }
+        return product;
+    }
+
+    private Product setSeller(Product product) {
+        if(categoryRepository.getRandomCategory().isPresent()){
+            User user = userRepository.getRandomUser().get();
+            product.setSeller(user);
+        }
+        return product;
     }
 }
