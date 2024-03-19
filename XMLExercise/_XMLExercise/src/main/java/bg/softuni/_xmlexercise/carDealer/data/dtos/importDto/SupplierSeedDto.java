@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.*;
 public class SupplierSeedDto {
     @XmlAttribute
     private String name;
-    @XmlAttribute(name = "is_importer")
+    @XmlAttribute(name = "is-importer")
     private boolean isImporter;
 
     public SupplierSeedDto() {

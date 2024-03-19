@@ -9,4 +9,6 @@ import java.util.List;
 public interface CustomerService {
     void seedCustomers() throws JAXBException;
     void getAllCustomersOrderedByBirthDate() throws JAXBException;
+
+    void getAllCustomersWithBoughtCars() throws JAXBException;
 }

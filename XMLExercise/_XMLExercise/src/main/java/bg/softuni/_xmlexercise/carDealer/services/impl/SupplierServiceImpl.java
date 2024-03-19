@@ -1,6 +1,8 @@
 package bg.softuni._xmlexercise.carDealer.services.impl;
 
 
+import bg.softuni._xmlexercise.carDealer.data.dtos.exportDtop.LocalSupplierDto;
+import bg.softuni._xmlexercise.carDealer.data.dtos.exportDtop.LocalSupplierExportDto;
 import bg.softuni._xmlexercise.carDealer.data.dtos.importDto.SupplierImportDto;
 import bg.softuni._xmlexercise.carDealer.data.dtos.importDto.SupplierSeedDto;
 import bg.softuni._xmlexercise.carDealer.data.models.Supplier;
@@ -14,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SupplierServiceImpl implements SupplierService {
@@ -44,5 +48,21 @@ public class SupplierServiceImpl implements SupplierService {
             }
 
         }
+    }
+
+    @Override
+    public void getAllLocalSuppliers() throws JAXBException {
+        List<LocalSupplierExportDto> dtos = this.supplierRepository.findAllByIsImporterFalse()
+                .orElseThrow(NoSuchFieldError::new)
+                .stream()
+                .map(s -> {
+                    LocalSupplierExportDto dto = mapper.map(s, LocalSupplierExportDto.class);
+                    dto.setPartsCount(s.getParts().size());
+                    return dto;
+                })
+                .toList();
+        LocalSupplierDto localSupplierDto = new LocalSupplierDto();
+        localSupplierDto.setSuppliers(dtos);
+        xmlParser.writeToFile(LocalSupplierDto.class,localSupplierDto,Paths.LOCAL_SUPPLIERS_OUTPUT);
     }
 }

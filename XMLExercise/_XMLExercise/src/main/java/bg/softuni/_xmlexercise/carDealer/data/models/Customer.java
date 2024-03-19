@@ -1,12 +1,11 @@
 package bg.softuni._xmlexercise.carDealer.data.models;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "customers")
@@ -18,6 +17,17 @@ public class Customer extends BaseEntity {
     private LocalDateTime birthDate;
     @Column(name = "is_young_driver")
     private boolean isYoungDriver;
+
+
+    @OneToMany(mappedBy = "customer",fetch = FetchType.EAGER)
+    private List<Sale> sales;
+    public List<Sale> getSales() {
+        return sales;
+    }
+
+    public void setSales(List<Sale> sales) {
+        this.sales = sales;
+    }
 
     public String getName() {
         return name;

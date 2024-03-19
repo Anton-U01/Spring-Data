@@ -16,16 +16,14 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
     private final CustomerService customerService;
     private final SaleService saleService;
     private final XmlParser xmlParser;
-    private final FileWriter fileWriter;
 
-    public CommandLineRunnerImpl(SupplierService supplierService, PartService partService, CarService carService, CustomerService customerService, SaleService saleService, XmlParser xmlParser, FileWriter fileWriter) {
+    public CommandLineRunnerImpl(SupplierService supplierService, PartService partService, CarService carService, CustomerService customerService, SaleService saleService, XmlParser xmlParser) {
         this.supplierService = supplierService;
         this.partService = partService;
         this.carService = carService;
         this.customerService = customerService;
         this.saleService = saleService;
         this.xmlParser = xmlParser;
-        this.fileWriter = fileWriter;
     }
 
     @Override
@@ -35,7 +33,11 @@ public class CommandLineRunnerImpl implements CommandLineRunner {
         //this.carService.seedCars();
         //this.customerService.seedCustomers();
         //this.saleService.seedSales();
-        this.customerService.getAllCustomersOrderedByBirthDate();
-
+        //this.customerService.getAllCustomersOrderedByBirthDate();
+        //this.carService.getAllToyotaCars();
+        //this.supplierService.getAllLocalSuppliers();
+        //this.carService.getAllCarsWithTheirParts();
+        //this.customerService.getAllCustomersWithBoughtCars();
+        this.saleService.getSales();
     }
 }

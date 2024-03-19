@@ -1,6 +1,7 @@
 package bg.softuni._xmlexercise.carDealer.services.impl;
 
 
+import bg.softuni._xmlexercise.carDealer.data.dtos.exportDtop.*;
 import bg.softuni._xmlexercise.carDealer.data.dtos.importDto.CarImportDto;
 import bg.softuni._xmlexercise.carDealer.data.dtos.importDto.CarSeedDto;
 import bg.softuni._xmlexercise.carDealer.data.models.Car;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CarServiceImpl implements CarService {
@@ -50,7 +52,6 @@ public class CarServiceImpl implements CarService {
         }
     }
 
-
     private Car setParts(Car car) {
         Random random = new Random();
         int partsCount = random.nextInt(6 - 3) + 3;
@@ -68,4 +69,40 @@ public class CarServiceImpl implements CarService {
         car.setParts(partList);
         return car;
     }
+
+    @Override
+    public void getAllToyotaCars() throws JAXBException {
+        List<CarToyotaExportDto> dtos = this.carRepository.findAllByMakeOrderByModelAscTravelledDistanceDesc("Toyota")
+                .orElseThrow(NoSuchElementException::new)
+                .stream()
+                .map(c -> mapper.map(c, CarToyotaExportDto.class))
+                .toList();
+        CarsToyotaDto carsToyotaDto = new CarsToyotaDto();
+        carsToyotaDto.setCars(dtos);
+
+        xmlParser.writeToFile(CarsToyotaDto.class,carsToyotaDto,Paths.OUTPUT_TOYOTA_CARS);
+    }
+
+    @Override
+    public void getAllCarsWithTheirParts() throws JAXBException {
+        List<AllCarExportDto> dtos = this.carRepository.getAllBy()
+                .orElseThrow(NoSuchElementException::new)
+                .stream()
+                .map(car -> {
+                    List<Part> parts = car.getParts();
+                    List<PartExportDto> partDtos = parts.stream().map(p -> mapper.map(p, PartExportDto.class)).toList();
+                    PartDto partDto = new PartDto();
+                    partDto.setParts(partDtos);
+                    AllCarExportDto carExportDto = mapper.map(car, AllCarExportDto.class);
+                    carExportDto.setParts(partDto);
+                    return carExportDto;
+                })
+                .toList();
+        AllCarDto allCarDto = new AllCarDto();
+        allCarDto.setCars(dtos);
+        xmlParser.writeToFile(AllCarDto.class,allCarDto,Paths.CARS_AND_PARTS_OUTPUT);
+
+    }
+
+
 }

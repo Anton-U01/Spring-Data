@@ -14,5 +14,8 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
     @Query("FROM Customer ORDER BY RAND() LIMIT 1")
     Optional<Customer> getRandomCustomer();
 
-    Optional<List<Customer>> getAllOrderByBirthDateAndYoungDriver();
+    Optional<List<Customer>> findAllByOrderByBirthDateAscIsYoungDriverAsc();
+
+    @Query("FROM Customer c WHERE SIZE(c.sales) > 0")
+    Optional<List<Customer>> getAllCustomersWithBoughtCars();
 }

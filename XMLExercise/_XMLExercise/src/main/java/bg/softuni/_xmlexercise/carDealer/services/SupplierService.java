@@ -6,4 +6,6 @@ import java.io.FileNotFoundException;
 
 public interface SupplierService {
     void seedSuppliers() throws FileNotFoundException, JAXBException;
+
+    void getAllLocalSuppliers() throws JAXBException;
 }
