@@ -12,6 +12,7 @@ import softuni.exam.util.ValidationUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 
 @Service
 public class PartsServiceImpl implements PartsService {
@@ -42,17 +43,24 @@ public class PartsServiceImpl implements PartsService {
     @Override
     public String importParts() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        decimalFormat.setMinimumFractionDigits(1);
+        decimalFormat.setMaximumFractionDigits(2);
         PartSeedDto[] dtos = gson.fromJson(readPartsFileContent(), PartSeedDto[].class);
         for (PartSeedDto dto : dtos) {
-            if(!validationUtil.isValid(dto) || partRepository.findByPartName(dto.getPartName()).isPresent()){
+            if (!validationUtil.isValid(dto) || partRepository.findByPartName(dto.getPartName()).isPresent()) {
                 stringBuilder.append("Invalid part\n");
                 continue;
             }
             Part part = mapper.map(dto, Part.class);
             partRepository.saveAndFlush(part);
-            stringBuilder.append(String.format("Successfully imported part %s - %.2f\n",part.getPartName(),part.getPrice()));
+            stringBuilder.append(String.format("Successfully imported part %s - %s\n", part.getPartName(),decimalFormat.format(part.getPrice())));
         }
 
         return stringBuilder.toString();
     }
+
+
+
+
 }

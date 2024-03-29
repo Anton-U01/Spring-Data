@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import softuni.exam.models.dto.TaskRootDto;
 import softuni.exam.models.dto.TaskSeedDto;
+import softuni.exam.models.entity.CarType;
 import softuni.exam.models.entity.Mechanic;
 import softuni.exam.models.entity.Part;
 import softuni.exam.models.entity.Task;
@@ -19,7 +20,9 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TasksServiceImpl implements TasksService {
@@ -73,8 +76,25 @@ public class TasksServiceImpl implements TasksService {
         return stringBuilder.toString();
     }
 
+
     @Override
     public String getCoupeCarTasksOrderByPrice() {
-        return null;
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        decimalFormat.setMinimumFractionDigits(1);
+        decimalFormat.setMaximumFractionDigits(2);
+        return taskRepository.findAllByCarTypeOrderByPrice(CarType.coupe)
+                .stream()
+                .map(t -> String.format("Car %s %s with %dkm\n" +
+                                "-Mechanic: %s %s - task №%d:\n" +
+                                " --Engine: %s\n" +
+                                "---Price: %.2f$\n",t.getCar().getCarMake(),
+                        t.getCar().getCarModel(),
+                        t.getCar().getKilometers(),
+                        t.getMechanic().getFirstName(),
+                        t.getMechanic().getLastName(),
+                        t.getId(),
+                        decimalFormat.format(t.getCar().getEngine()),
+                        t.getPrice()))
+                .collect(Collectors.joining());
     }
 }
